@@ -13,6 +13,8 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using PRN232.Lab1.Api;
+using System.Diagnostics.Metrics;
 
 namespace ProductStore;
 
@@ -20,33 +22,33 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        var appBuilder = WebApplication.CreateBuilder(args);
         #region OpenTelemetry
 
         // Note: Switch between Zipkin/OTLP/Console by setting UseTracingExporter in appsettings.json.
-        var tracingExporter = builder.Configuration.GetValue("UseTracingExporter", defaultValue: "CONSOLE").ToUpperInvariant();
+        var tracingExporter = appBuilder.Configuration.GetValue("UseTracingExporter", defaultValue: "CONSOLE").ToUpperInvariant();
 
         // Note: Switch between Prometheus/OTLP/Console by setting UseMetricsExporter in appsettings.json.
-        var metricsExporter = builder.Configuration.GetValue("UseMetricsExporter", defaultValue: "CONSOLE").ToUpperInvariant();
+        var metricsExporter = appBuilder.Configuration.GetValue("UseMetricsExporter", defaultValue: "CONSOLE").ToUpperInvariant();
 
         // Note: Switch between Console/OTLP by setting UseLogExporter in appsettings.json.
-        var logExporter = builder.Configuration.GetValue("UseLogExporter", defaultValue: "CONSOLE").ToUpperInvariant();
+        var logExporter = appBuilder.Configuration.GetValue("UseLogExporter", defaultValue: "CONSOLE").ToUpperInvariant();
 
         // Note: Switch between Explicit/Exponential by setting HistogramAggregation in appsettings.json
-        var histogramAggregation = builder.Configuration.GetValue("HistogramAggregation", defaultValue: "EXPLICIT").ToUpperInvariant();
+        var histogramAggregation = appBuilder.Configuration.GetValue("HistogramAggregation", defaultValue: "EXPLICIT").ToUpperInvariant();
 
         // Create a service to expose ActivitySource, and Metric Instruments
         // for manual instrumentation
-        builder.Services.AddSingleton<InstrumentationSource>();
+        appBuilder.Services.AddSingleton<InstrumentationSource>();
 
         // Clear default logging providers used by WebApplication host.
-        builder.Logging.ClearProviders();
+        appBuilder.Logging.ClearProviders();
 
 
-        builder.Services.AddOpenTelemetry()
+        appBuilder.Services.AddOpenTelemetry()
             .ConfigureResource(r => r
                 .AddService(
-                    serviceName: builder.Configuration.GetValue("ServiceName", defaultValue: "otel-test")!,
+                    serviceName: appBuilder.Configuration.GetValue("ServiceName", defaultValue: "otel-test")!,
                     serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown",
                     serviceInstanceId: Environment.MachineName))
             .WithTracing(builder =>
@@ -61,25 +63,25 @@ public class Program
                     .AddAspNetCoreInstrumentation();
 
                 // Use IConfiguration binding for AspNetCore instrumentation options.
-                builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(builder.Configuration.GetSection("AspNetCoreInstrumentation"));
+                appBuilder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(appBuilder.Configuration.GetSection("AspNetCoreInstrumentation"));
 
                 switch (tracingExporter)
                 {
-                    case "ZIPKIN":
-                        builder.AddZipkinExporter();
+                    //case "ZIPKIN":
+                    //    builder.AddZipkinExporter();
 
-                        builder.ConfigureServices(services =>
-                        {
-                            // Use IConfiguration binding for Zipkin exporter options.
-                            services.Configure<ZipkinExporterOptions>(builder.Configuration.GetSection("Zipkin"));
-                        });
-                        break;
+                    //    builder.ConfigureServices(services =>
+                    //    {
+                    //        // Use IConfiguration binding for Zipkin exporter options.
+                    //        services.Configure<ZipkinExporterOptions>(builder.Configuration.GetSection("Zipkin"));
+                    //    });
+                    //    break;
 
                     case "OTLP":
                         builder.AddOtlpExporter(otlpOptions =>
                         {
                             // Use IConfiguration directly for Otlp exporter endpoint option.
-                            otlpOptions.Endpoint = new Uri(builder.Configuration.GetValue("Otlp:Endpoint", defaultValue: "http://localhost:4317"));
+                            otlpOptions.Endpoint = new Uri(appBuilder.Configuration.GetValue("Otlp:Endpoint", defaultValue: "http://localhost:4317"));
                         });
                         break;
 
@@ -125,7 +127,7 @@ public class Program
                         builder.AddOtlpExporter(otlpOptions =>
                         {
                             // Use IConfiguration directly for Otlp exporter endpoint option.
-                            otlpOptions.Endpoint = new Uri(builder.Configuration.GetValue("Otlp:Endpoint", defaultValue: "http://localhost:4317")!);
+                            otlpOptions.Endpoint = new Uri(appBuilder.Configuration.GetValue("Otlp:Endpoint", defaultValue: "http://localhost:4317")!);
                         });
                         break;
                     default:
@@ -143,7 +145,7 @@ public class Program
                         builder.AddOtlpExporter(otlpOptions =>
                         {
                             // Use IConfiguration directly for Otlp exporter endpoint option.
-                            otlpOptions.Endpoint = new Uri(builder.Configuration.GetValue("Otlp:Endpoint", defaultValue: "http://localhost:4317"));
+                            otlpOptions.Endpoint = new Uri(appBuilder.Configuration.GetValue("Otlp:Endpoint", defaultValue: "http://localhost:4317"));
                         });
                         break;
                     default:
@@ -157,10 +159,10 @@ public class Program
         #endregion
 
         #region DbContext
-        string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        string? connectionString = appBuilder.Configuration.GetConnectionString("DefaultConnection");
         Console.WriteLine(connectionString);
 
-        builder.Services.AddDbContext<Lab1PharmaceuticalDbContext>(
+        appBuilder.Services.AddDbContext<Lab1PharmaceuticalDbContext>(
             options =>
             {
                 options.UseSqlServer(connectionString, b => b.MigrationsAssembly(typeof(Lab1PharmaceuticalDbContext).Assembly.GetName().Name));
@@ -168,29 +170,29 @@ public class Program
         #endregion
 
         //====================
-        builder.Services.AddControllers();
-        builder.Services.AddControllers().AddJsonOptions(option =>
+        appBuilder.Services.AddControllers();
+        appBuilder.Services.AddControllers().AddJsonOptions(option =>
         {
             option.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             option.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
         });
         //=====================
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
+        appBuilder.Services.AddEndpointsApiExplorer();
 
-        builder.Services.AddScoped<IManufactureRepository, ManufactureRepository>();
-        builder.Services.AddScoped<IMedicineInfomationReposiroty, MedicineInfomationRepository>();
-        builder.Services.AddScoped<IStoreAccountRepository, StoreAccountRepository>();
+        appBuilder.Services.AddScoped<IManufactureRepository, ManufactureRepository>();
+        appBuilder.Services.AddScoped<IMedicineInfomationReposiroty, MedicineInfomationRepository>();
+        appBuilder.Services.AddScoped<IStoreAccountRepository, StoreAccountRepository>();
 
-        builder.Services.AddScoped<IManufacturerService, ManufacturerService>();
-        builder.Services.AddScoped<IMedicineInfomationService, MedicineInfomationService>();
-        builder.Services.AddScoped<IStoreAccountService, StoreAccountService>();
+        appBuilder.Services.AddScoped<IManufacturerService, ManufacturerService>();
+        appBuilder.Services.AddScoped<IMedicineInfomationService, MedicineInfomationService>();
+        appBuilder.Services.AddScoped<IStoreAccountService, StoreAccountService>();
 
-        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        appBuilder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        builder.Services.AddSwaggerGen();
+        appBuilder.Services.AddSwaggerGen();
 
-        builder.Services.AddCors(options =>
+        appBuilder.Services.AddCors(options =>
         {
             options.AddPolicy("DevCorsPolicy", policy =>
             {
@@ -200,7 +202,7 @@ public class Program
             });
         });
 
-        var app = builder.Build();
+        var app = appBuilder.Build();
 
         app.UseCors("DevCorsPolicy");
 
