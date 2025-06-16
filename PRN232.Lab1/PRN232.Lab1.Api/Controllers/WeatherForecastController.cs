@@ -23,7 +23,7 @@ public class WeatherForecastController : ControllerBase
 
     private readonly ILogger<WeatherForecastController> logger;
     private readonly ActivitySource activitySource;
-    private readonly Counter<long> freezingDaysCounter;
+    //private readonly Counter<long> freezingDaysCounter;
 
     public WeatherForecastController(ILogger<WeatherForecastController> logger, InstrumentationSource instrumentationSource)
     {
@@ -31,7 +31,7 @@ public class WeatherForecastController : ControllerBase
 
         ArgumentNullException.ThrowIfNull(instrumentationSource);
         activitySource = instrumentationSource.ActivitySource;
-        freezingDaysCounter = instrumentationSource.FreezingDaysCounter;
+        //freezingDaysCounter = instrumentationSource.FreezingDaysCounter;
     }
 
     [HttpGet]
@@ -63,7 +63,7 @@ public class WeatherForecastController : ControllerBase
         .ToArray();
 
         // Optional: Count the freezing days
-        freezingDaysCounter.Add(forecast.Count(f => f.TemperatureC < 0));
+        //freezingDaysCounter.Add(forecast.Count(f => f.TemperatureC < 0));
 
         logger.WeatherForecastGenerated(LogLevel.Information, forecast.Length, forecast);
 

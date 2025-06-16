@@ -13,8 +13,8 @@ using System.Diagnostics.Metrics;
 /// </summary>
 public sealed class InstrumentationSource : IDisposable
 {
-    internal const string ActivitySourceName = "Examples.AspNetCore";
-    internal const string MeterName = "Examples.AspNetCore";
+    internal const string ActivitySourceName = "YourAppName";  // e.g., "ECommerce.Api"
+    internal const string MeterName = "YourAppName.Metrics";  // e.g., "ECommerce.Metrics"
     private readonly Meter meter;
 
     public InstrumentationSource()
@@ -22,12 +22,16 @@ public sealed class InstrumentationSource : IDisposable
         string? version = typeof(InstrumentationSource).Assembly.GetName().Version?.ToString();
         ActivitySource = new ActivitySource(ActivitySourceName, version);
         meter = new Meter(MeterName, version);
-        FreezingDaysCounter = meter.CreateCounter<long>("weather.days.freezing", description: "The number of days where the temperature is below freezing");
+        //FreezingDaysCounter = meter.CreateCounter<long>("weather.days.freezing", description: "The number of days where the temperature is below freezing");
+        FilterRequesCounter = meter.CreateCounter<long>("filter.request");
+        FilterProcessingTime = meter.CreateHistogram<double>("filter.process_time", "ms");
     }
 
     public ActivitySource ActivitySource { get; }
 
-    public Counter<long> FreezingDaysCounter { get; }
+    public Counter<long> FilterRequesCounter { get; }
+    public Histogram<double> FilterProcessingTime { get; }
+    //public Counter<long> FreezingDaysCounter { get; }
 
     public void Dispose()
     {

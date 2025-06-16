@@ -5,18 +5,15 @@ using PRN232.Lab1.Repo.Interfaces;
 using PRN232.Lab1.Repo.UnitOfWork;
 using PRN232.Lab1.Service.Implement;
 using PRN232.Lab1.Service.Interfaces;
-using System.Reflection.PortableExecutable;
 using System.Text.Json.Serialization;
-using OpenTelemetry.Exporter;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using PRN232.Lab1.Api;
 using System.Diagnostics.Metrics;
 
-namespace ProductStore;
+namespace PRN232.Lab1.Api;
 
 public class Program
 {
@@ -51,12 +48,12 @@ public class Program
                     serviceName: appBuilder.Configuration.GetValue("ServiceName", defaultValue: "otel-test")!,
                     serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown",
                     serviceInstanceId: Environment.MachineName))
-            .WithTracing(builder =>
+            .WithTracing(tracing =>
             {
                 // Tracing
 
                 // Ensure the TracerProvider subscribes to any custom ActivitySources.
-                builder
+                tracing
                     .AddSource(InstrumentationSource.ActivitySourceName)
                     .SetSampler(new AlwaysOnSampler())
                     .AddHttpClientInstrumentation()
@@ -78,7 +75,7 @@ public class Program
                     //    break;
 
                     case "OTLP":
-                        builder.AddOtlpExporter(otlpOptions =>
+                        tracing.AddOtlpExporter(otlpOptions =>
                         {
                             // Use IConfiguration directly for Otlp exporter endpoint option.
                             otlpOptions.Endpoint = new Uri(appBuilder.Configuration.GetValue("Otlp:Endpoint", defaultValue: "http://localhost:4317"));
@@ -86,26 +83,27 @@ public class Program
                         break;
 
                     default:
-                        builder.AddConsoleExporter();
+                        tracing.AddConsoleExporter();
                         break;
                 }
             })
-            .WithMetrics(builder =>
+            .WithMetrics(metrics =>
             {
                 // Metrics
 
                 // Ensure the MeterProvider subscribes to any custom Meters.
-                builder
+                metrics
                     .AddMeter(InstrumentationSource.MeterName)
                     .SetExemplarFilter(ExemplarFilterType.TraceBased)
                     .AddRuntimeInstrumentation()
+                    .AddProcessInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation();
 
                 switch (histogramAggregation)
                 {
                     case "EXPONENTIAL":
-                        builder.AddView(instrument =>
+                        metrics.AddView(instrument =>
                         {
                             return instrument.GetType().GetGenericTypeDefinition() == typeof(Histogram<>)
                                 ? new Base2ExponentialBucketHistogramConfiguration()
@@ -121,35 +119,35 @@ public class Program
                 switch (metricsExporter)
                 {
                     case "PROMETHEUS":
-                        builder.AddPrometheusExporter();
+                        metrics.AddPrometheusExporter();
                         break;
                     case "OTLP":
-                        builder.AddOtlpExporter(otlpOptions =>
+                        metrics.AddOtlpExporter(otlpOptions =>
                         {
                             // Use IConfiguration directly for Otlp exporter endpoint option.
                             otlpOptions.Endpoint = new Uri(appBuilder.Configuration.GetValue("Otlp:Endpoint", defaultValue: "http://localhost:4317")!);
                         });
                         break;
                     default:
-                        builder.AddConsoleExporter();
+                        metrics.AddConsoleExporter();
                         break;
                 }
             })
-            .WithLogging(builder =>
+            .WithLogging(logging =>
             {
                 // Note: See appsettings.json Logging:OpenTelemetry section for configuration.
 
                 switch (logExporter)
                 {
                     case "OTLP":
-                        builder.AddOtlpExporter(otlpOptions =>
+                        logging.AddOtlpExporter(otlpOptions =>
                         {
                             // Use IConfiguration directly for Otlp exporter endpoint option.
                             otlpOptions.Endpoint = new Uri(appBuilder.Configuration.GetValue("Otlp:Endpoint", defaultValue: "http://localhost:4317"));
                         });
                         break;
                     default:
-                        builder.AddConsoleExporter();
+                        logging.AddConsoleExporter();
                         break;
                 }
             });
@@ -180,6 +178,8 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         appBuilder.Services.AddEndpointsApiExplorer();
 
+        #region BusinessServices
+
         appBuilder.Services.AddScoped<IManufactureRepository, ManufactureRepository>();
         appBuilder.Services.AddScoped<IMedicineInfomationReposiroty, MedicineInfomationRepository>();
         appBuilder.Services.AddScoped<IStoreAccountRepository, StoreAccountRepository>();
@@ -190,6 +190,7 @@ public class Program
 
         appBuilder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+        #endregion
         appBuilder.Services.AddSwaggerGen();
 
         appBuilder.Services.AddCors(options =>
@@ -219,6 +220,13 @@ public class Program
 
 
         app.MapControllers();
+
+        // Configure OpenTelemetry Prometheus AspNetCore middleware scrape endpoint if enabled.
+        if (metricsExporter.Equals("prometheus", StringComparison.OrdinalIgnoreCase))
+        {
+            app.UseOpenTelemetryPrometheusScrapingEndpoint();
+        }
+
 
         app.Run();
     }
