@@ -16,7 +16,7 @@ namespace ODataBookStoreWebClient.Controllers
             client = new HttpClient();
             var contentType = new MediaTypeWithQualityHeaderValue("application/json");
             client.DefaultRequestHeaders.Accept.Add(contentType);
-            ProductApiUrl = "http://localhost:5262/odata/Presses";
+            ProductApiUrl = "http://localhost:5262/api/Presses";
         }
         // GET: BookController
         public async Task<IActionResult> Index()

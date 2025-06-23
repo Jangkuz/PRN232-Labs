@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace MyApp.Namespace;
 
-[Route("odata/[controller]")]
+[Route("api/[controller]")]
 [ApiController]
 public class PressesController : ODataController
 {

@@ -52,4 +52,11 @@ public class MedicineInformationsController : ControllerBase
         filterProcessingTime.Record(stopWatch.ElapsedMilliseconds);
         return Ok(result);
     }
+
+    [HttpPost()]
+    public async Task<ActionResult> CreateMedicine()
+    {
+        
+        return Ok();
+    }
 }
