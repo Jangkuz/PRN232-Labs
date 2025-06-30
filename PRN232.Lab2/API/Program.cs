@@ -6,27 +6,35 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using ODataBookStore.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-var modelBuilder = new ODataConventionModelBuilder();
+var edmModel = EdmModelBuilder.GetEdmModel();
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 builder.Services.AddDbContext<BookStoreContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
 
+// builder.Services.AddControllers();
 
 builder.Services.AddControllers().AddOData(option =>
     option.Select().Filter().Count().OrderBy().Expand().SetMaxTop(100).Count()
-    .AddRouteComponents("odata", modelBuilder.GetEdmModel())
+    .AddRouteComponents("odata", edmModel)
     );
 
-//builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+
+// app.UseHttpsRedirection();
+
+app.UseODataRouteDebug(); // Use to see which OData routes are available
+
+app.UseODataBatching();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -35,12 +43,26 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-
-
 app.UseRouting();
-app.UseODataBatching();
+
+// Test middleware
+app.Use(next => context =>
+{
+    var endpoint = context.GetEndpoint();
+    if (endpoint == null)
+    {
+        return next(context);
+    }
+
+    IEnumerable<string> templates;
+    IODataRoutingMetadata? metadata = endpoint.Metadata.GetMetadata<IODataRoutingMetadata>();
+    if (metadata != null)
+    {
+        templates = metadata.Template.GetTemplates();
+    }
+
+    return next(context);
+});
 
 app.MapControllers();
 

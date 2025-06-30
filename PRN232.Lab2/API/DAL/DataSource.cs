@@ -4,7 +4,7 @@ namespace API.DAL;
 
 public static class DataSource
 {
-    private static IList<Book> listBooks { get; set; }
+    private static IList<Book> listBooks { get; set; } = default!;
     public static IList<Book> GetBooks()
     {
         if (listBooks != null)

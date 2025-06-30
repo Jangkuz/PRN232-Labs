@@ -1,0 +1,1 @@
+dotnet ef dbcontext scaffold “Server=localhost,1433; Database=Summer2025HandbagDB; Uid=sa; Pwd=123456; TrustServerCertificate=true” Microsoft.EntityFrameworkCore.SqlServer --output-dir ./ --no-onconfiguring
