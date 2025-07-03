@@ -1,9 +1,9 @@
-﻿using DataAccessLayer.Interfaces;
+﻿using BusinessObjects.Entities;
+using BusinessObjects.Paging;
+using DataAccessLayer.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Query;
-using Repositories.Entities;
-using Repositories.Paging;
 using System.Linq.Expressions;
 
 namespace Repositories.Implements;
@@ -241,7 +241,13 @@ public class GenericRepository<TEntity, TEntityId> : IGenericRepository<TEntity,
         return await query.ToListAsync();
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync(int pageNumber, int pageSize, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? includeProperties, Expression<Func<TEntity, bool>>? filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, bool noTracking = true)
+    public async Task<IEnumerable<TEntity>> GetAllPagingAsync(
+        int pageNumber,
+        int pageSize,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? includeProperties,
+        Expression<Func<TEntity, bool>>? filter,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
+        bool noTracking = true)
     {
         IQueryable<TEntity> query = _context.Set<TEntity>();
 
@@ -291,7 +297,7 @@ public class GenericRepository<TEntity, TEntityId> : IGenericRepository<TEntity,
 
         int totalItem = await CountAsync(filter);
 
-        IEnumerable<TEntity> items = await GetAllAsync(
+        IEnumerable<TEntity> items = await GetAllPagingAsync(
             pageNumber: page,
             pageSize: pageSize,
             includeProperties: includes,

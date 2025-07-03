@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Services;
+﻿using Microsoft.AspNetCore.Mvc;
 using PRN231_SU25_SE181818.api.DTO.Login;
+using Services;
 
 namespace PRN231_SU25_SE181818.api.Controllers;
 
@@ -16,14 +15,14 @@ public class AuthController : ControllerBase
         _accountService = accountService;
     }
 
-    [HttpPost("Login")]
-    public async Task<ActionResult> Login([FromBody] LoginRequest loginRequest)
+    [HttpPost]
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest loginRequest)
     {
         var result = await _accountService.LoginAsync(loginRequest.Email, loginRequest.Password);
 
         if (!result.IsSuccess)
         {
-           return StatusCode(result.HtmlStatus, result.Error);
+            return StatusCode(result.HtmlStatus, result.Error);
         }
         return StatusCode(result.HtmlStatus, result.Data);
     }

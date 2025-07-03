@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
-using Repositories.Entities;
-using Repositories.Paging;
+﻿using BusinessObjects.Entities;
+using BusinessObjects.Paging;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace DataAccessLayer.Interfaces;
@@ -203,7 +203,7 @@ public interface IGenericRepository<TEntity, TEntityId>
     ///     all existing records of type <typeparamref name="TEntity"/> with requested navigational properties included
     /// </returns>
     Task<ICollection<TEntity>> GetAllAsync(
-        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? includeProperties,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include,
         bool noTracking = true
         );
 
@@ -223,11 +223,11 @@ public interface IGenericRepository<TEntity, TEntityId>
         );
 
     /// <summary>
-    ///     Return a list of entity of type <typeparamref name="TEntity"/> with <paramref name="includeProperties"/> included.
+    ///     Return a list of entity of type <typeparamref name="TEntity"/> with <paramref name="include"/> included.
     ///     Optionally the operation will also filter the list by using the <paramref name="filter"/> 
     ///     and sort the list based on the entity <paramref name="orderBy"/> property.
     /// </summary>
-    /// <param name="includeProperties">The included property for the entity fo type <typeparamref name="TEntity"/></param>
+    /// <param name="include">The included property for the entity fo type <typeparamref name="TEntity"/></param>
     /// <param name="filter">The filter criteria for the entity searching progress</param>
     /// <param name="orderBy">The property which the list will be sorted by their value.</param>
     /// <returns>
@@ -235,28 +235,28 @@ public interface IGenericRepository<TEntity, TEntityId>
     ///     The result will be the enumeration list of existing entity of type <typeparamref name="TEntity"/>.
     /// </returns>
     Task<IEnumerable<TEntity>> GetAllAsync(
-        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? includeProperties,
-        Expression<Func<TEntity, bool>>? filte,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include,
+        Expression<Func<TEntity, bool>>? filter,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
         bool noTracking = true
     );
 
     /// <summary>
-    ///     Return a list of entity of type <typeparamref name="TEntity"/> with <paramref name="includeProperties"/> included.
+    ///     Return a list of entity of type <typeparamref name="TEntity"/> with <paramref name="include"/> included.
     ///     Optionally the operation will also filter the list by using the <paramref name="filter"/> 
     ///     and sort the list based on the entity <paramref name="orderBy"/> property.
     /// </summary>
-    /// <param name="includeProperties">The included property for the entity fo type <typeparamref name="TEntity"/></param>
+    /// <param name="include">The included property for the entity fo type <typeparamref name="TEntity"/></param>
     /// <param name="filter">The filter criteria for the entity searching progress</param>
     /// <param name="orderBy">The property which the list will be sorted by their value.</param>
     /// <returns>
     ///     The asynchronous task represent the operation.
     ///     The result will be the enumeration list of existing entity of type <typeparamref name="TEntity"/>.
     /// </returns>
-    Task<IEnumerable<TEntity>> GetAllAsync(
+    Task<IEnumerable<TEntity>> GetAllPagingAsync(
         int pageNumber,
         int pageSize,
-        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? includeProperties,
+        Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include,
         Expression<Func<TEntity, bool>>? filter,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy,
         bool noTracking = true

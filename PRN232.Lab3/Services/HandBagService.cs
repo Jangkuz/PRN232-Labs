@@ -1,14 +1,9 @@
 ﻿using BusinessObjects.DTO.HandBag;
+using BusinessObjects.Entities;
 using BusinessObjects.ResultPattern;
 using Microsoft.EntityFrameworkCore;
-using Repositories.Entities;
 using Repositories.UnitOfWork;
 using Services.Helper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Services;
 
@@ -27,9 +22,20 @@ public class HandBagService : IHandBagService
         {
             var repo = _unitOfWork.GetRepo<Handbag, int>();
 
+            var brand = _unitOfWork.GetRepo<Brand, int>()
+                .GetById(handBagDTO.BrandId);
+
+            if (brand is null)
+            {
+                return SystemError.ResourceNotFound("Brand not found").ToGeneric<Handbag>();
+            }
+
             var handbag = handBagDTO.ToHandBag();
 
-            var handbags = await repo.AddAsync(handbag);
+            var listHb = await repo.GetAllAsync();
+            handbag.Id = listHb.Max(hb => hb.Id) + 1;
+
+            handbag = await repo.AddAsync(handbag);
             await _unitOfWork.SaveChangesAsync();
 
             return new Result<Handbag>
@@ -41,7 +47,8 @@ public class HandBagService : IHandBagService
         }
         catch (Exception ex)
         {
-            return (Result<Handbag>)SystemError.InternalServerError(ex.Message);
+            return SystemError.InternalServerError(ex.Message)
+                .ToGeneric<Handbag>();
         }
     }
 
@@ -67,7 +74,8 @@ public class HandBagService : IHandBagService
         }
         catch (Exception ex)
         {
-            return (Result<Handbag>)SystemError.InternalServerError(ex.Message);
+            return SystemError.InternalServerError(ex.Message)
+                .ToGeneric<Handbag>();
         }
     }
 
@@ -87,7 +95,8 @@ public class HandBagService : IHandBagService
         }
         catch (Exception ex)
         {
-            return (Result<IEnumerable<Handbag>>)SystemError.InternalServerError(ex.Message);
+            return SystemError.InternalServerError(ex.Message)
+                .ToGeneric<IEnumerable<Handbag>>();
         }
     }
 
@@ -112,7 +121,8 @@ public class HandBagService : IHandBagService
         }
         catch (Exception ex)
         {
-            return (Result<Handbag>)SystemError.InternalServerError(ex.Message);
+            return SystemError.InternalServerError(ex.Message)
+                .ToGeneric<Handbag>();
         }
     }
 
@@ -144,7 +154,53 @@ public class HandBagService : IHandBagService
         }
         catch (Exception ex)
         {
-            return (Result<Handbag>)SystemError.InternalServerError(ex.Message);
+            return SystemError.InternalServerError(ex.Message)
+                .ToGeneric<Handbag>();
+        }
+    }
+
+    public async Task<Result<IEnumerable<Handbag>>> SearchHandBagAsync(string modelName, string material)
+    {
+        try
+        {
+            var repo = _unitOfWork.GetRepo<Handbag, int>();
+
+            var handbags = await repo.GetAllAsync(
+                include: i => i.Include(hb => hb.Brand),
+                filter: f => f.ModelName.ToLower().Contains(modelName)
+                && f.Material.ToLower().Contains(material),
+                orderBy: null
+                );
+
+            var grouping = handbags
+                .GroupBy(h => h.BrandId)
+                .AsEnumerable();
+
+            var listGroups = new List<Handbag>();
+            foreach (var group in grouping)
+            {
+                //var name = _unitOfWork.GetRepo<Brand, int>()
+                //    .GetById((int)group.Key)?.BrandName;
+                //var search = new SearchHandBagDTO
+                //{
+                //    BrandName = name,
+                //    Handbags = group.ToList()
+                //};
+                listGroups.AddRange(group.ToList());
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new Result<IEnumerable<Handbag>>
+            {
+                HtmlStatus = 200,
+                IsSuccess = true,
+                Data = listGroups
+            };
+        }
+        catch (Exception ex)
+        {
+            return SystemError.InternalServerError(ex.Message)
+                .ToGeneric<IEnumerable<Handbag>>();
         }
     }
 }

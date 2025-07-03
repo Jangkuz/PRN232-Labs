@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using BusinessObjects.Entities;
 using Microsoft.EntityFrameworkCore;
-using Repositories.Entities;
 
 namespace Repositories;
 
@@ -47,6 +45,7 @@ public partial class Summer2025HandbagDbContext : DbContext
             entity.ToTable("Handbag");
 
             entity.Property(e => e.Id)
+                //.ValueGeneratedOnAdd()
                 .ValueGeneratedNever()
                 .HasColumnName("HandbagID");
             entity.Property(e => e.BrandId).HasColumnName("BrandID");

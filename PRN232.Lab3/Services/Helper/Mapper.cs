@@ -1,10 +1,5 @@
 ﻿using BusinessObjects.DTO.HandBag;
-using Repositories.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BusinessObjects.Entities;
 
 namespace Services.Helper;
 
@@ -17,7 +12,8 @@ public static class Mapper
             ModelName = dto.ModelName,
             Material = dto.Material,
             Price = dto.Price,
-            Stock = dto.Stock
+            Stock = dto.Stock,
+            BrandId = dto.BrandId
         };
     }
 }

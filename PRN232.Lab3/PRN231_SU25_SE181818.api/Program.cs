@@ -1,20 +1,21 @@
-
-using System.Security.Claims;
-using System.Text;
-using System.Text.Json.Serialization;
 using BusinessObjects.Constant;
+using BusinessObjects.Entities;
+using BusinessObjects.ResultPattern;
 using DataAccessLayer.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.OpenApi.Models;
 using Repositories;
-using Repositories.Entities;
 using Repositories.Implements;
 using Repositories.UnitOfWork;
 using Services;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PRN231_SU25_SE181818.api;
 
@@ -43,8 +44,6 @@ public class Program
         builder.Services.AddScoped<IAccountService, AccountService>();
         builder.Services.AddScoped<IHandBagService, HandBagService>();
 
-        builder.Services.AddControllers();
-
         builder.Services.AddControllers()
             .AddJsonOptions(options =>
             {
@@ -58,6 +57,30 @@ public class Program
                 )
             );
 
+
+        builder.Services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var errors = context.ModelState
+                    .Where(e => e.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        e => e.Key,
+                        e => e.Value!.Errors.First().ErrorMessage
+                    );
+
+                var response = SystemError.InvalidInput("").Error;
+
+                foreach (var key in errors.Keys)
+                {
+                    response.Message += $"{errors[key]} ";
+                }
+
+                response.Message = response.Message.Trim();
+
+                return new BadRequestObjectResult(response);
+            };
+        });
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -79,6 +102,39 @@ public class Program
                     ValidAudience = configuration["JWT:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:SecretKey"]))
                 };
+
+
+                //Customize JWT response
+                x.Events = new JwtBearerEvents
+                {
+                    OnChallenge = context =>
+                    {
+                        // Skip the default response
+                        context.HandleResponse();
+
+                        context.Response.StatusCode = 401;
+                        context.Response.ContentType = "application/json";
+
+                        var response = SystemError.InvalidToken("You are not authorized to access this resource.").Error;
+
+                        var result = JsonSerializer.Serialize(response);
+
+                        return context.Response.WriteAsync(result);
+                    },
+
+                    OnForbidden = context =>
+                    {
+                        context.Response.StatusCode = 403;
+                        context.Response.ContentType = "application/json";
+
+                        var response = SystemError.PermissionDeny("You do not have permission to perform this action").Error;
+
+                        var json = JsonSerializer.Serialize(response);
+
+                        return context.Response.WriteAsync(json);
+                    }
+
+                };
             });
 
         // Add Swagger JWT configuration
@@ -90,7 +146,7 @@ public class Program
                 Description = "JWT Authentication for API",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
-                Scheme = "Bearer",
+                Scheme = JwtBearerDefaults.AuthenticationScheme,
                 BearerFormat = "JWT"
             };
 
@@ -133,6 +189,10 @@ public class Program
 
 
         var app = builder.Build();
+
+        app.UseODataRouteDebug();
+
+        app.UseODataBatching();
 
         app.UseRouting();
 

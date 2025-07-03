@@ -1,7 +1,7 @@
-﻿using DataAccessLayer.Interfaces;
+﻿using BusinessObjects.Entities;
+using DataAccessLayer.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using Repositories.Entities;
 
 namespace Repositories.UnitOfWork;
 

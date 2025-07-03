@@ -1,4 +1,4 @@
-﻿namespace Repositories.Entities;
+﻿namespace BusinessObjects.Entities;
 
 public abstract class BaseEntity<TEntityId> where TEntityId : notnull
 {

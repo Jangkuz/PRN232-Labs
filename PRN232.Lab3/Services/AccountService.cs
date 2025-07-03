@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Constant;
+﻿using BusinessObjects.Constant;
+using BusinessObjects.Entities;
 using BusinessObjects.ResultPattern;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using PRN231_SU25_SE181818.api.DTO.Login;
-using Repositories.Entities;
 using Repositories.UnitOfWork;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Services;
 

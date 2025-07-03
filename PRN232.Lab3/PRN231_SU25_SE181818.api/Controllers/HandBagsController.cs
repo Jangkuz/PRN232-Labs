@@ -1,12 +1,11 @@
 ﻿using BusinessObjects.Constant;
 using BusinessObjects.DTO.HandBag;
+using BusinessObjects.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
-using Repositories.Entities;
 using Services;
-using System.Threading.Tasks;
 
 
 namespace PRN231_SU25_SE181818.api.Controllers;
@@ -22,7 +21,6 @@ public class HandBagsController : ODataController
         _handBagService = handBagService;
     }
 
-    [EnableQuery]
     [Authorize(Policy = Policy.AnyWithToken)]
     [HttpGet("/api/handbags")]
     public async Task<ActionResult<IEnumerable<Handbag>>> GetAllHandbags()
@@ -63,7 +61,7 @@ public class HandBagsController : ODataController
     }
 
     [Authorize(Policy = Policy.AdminOrMod)]
-    [HttpPut("/api/handbags/{id}")]
+    [HttpPatch("/api/handbags/{id}")]
     public async Task<ActionResult<Handbag>> UpdateHandBag(int id, [FromBody] CreateUpdateHandBagDTO updateDto)
     {
 
@@ -87,5 +85,19 @@ public class HandBagsController : ODataController
             return StatusCode(result.HtmlStatus, result.Error);
         }
         return StatusCode(result.HtmlStatus);
+    }
+
+    [EnableQuery]
+    [Authorize(Policy = Policy.AnyWithToken)]
+    [HttpGet("api/handbags/search")]
+    public async Task<ActionResult<IEnumerable<Handbag>>> SearchHandBags([FromQuery] string? modelName, [FromQuery] string? material)
+    {
+        var result = await _handBagService.SearchHandBagAsync(modelName ?? string.Empty, material ?? string.Empty);
+
+        if (!result.IsSuccess)
+        {
+            return StatusCode(result.HtmlStatus, result.Error);
+        }
+        return StatusCode(result.HtmlStatus, result.Data);
     }
 }

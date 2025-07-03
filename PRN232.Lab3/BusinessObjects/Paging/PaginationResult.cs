@@ -1,4 +1,4 @@
-﻿namespace Repositories.Paging;
+﻿namespace BusinessObjects.Paging;
 
 public class PaginationResult
 {

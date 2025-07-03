@@ -1,5 +1,3 @@
-using System;
-
 namespace PRN231_SU25_SE181818.api.DTO.Login;
 
 public class LoginResponse
