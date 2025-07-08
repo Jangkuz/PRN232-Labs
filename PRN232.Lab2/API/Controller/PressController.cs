@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace MyApp.Namespace;
 
-// [Route("api/[controller]")]
-// [ApiController]
+[Route("api/presses")]
+[ApiController]
 public class PressesController : ODataController
 {
     private BookStoreContext db;
@@ -25,16 +25,16 @@ public class PressesController : ODataController
             }
         }
     }
-    // [HttpGet]
+    [HttpGet]
     [EnableQuery(PageSize = 3)]
-    public IActionResult Get()
+    public IActionResult GetAllPresses()
     {
         return Ok(db.Presses);
     }
 
     [HttpPost]
     // [EnableQuery]
-    public IActionResult Post([FromBody] Press press)
+    public IActionResult CreatePress([FromBody] Press press)
     {
         if (!ModelState.IsValid)
         {

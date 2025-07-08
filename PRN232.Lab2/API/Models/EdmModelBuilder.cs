@@ -10,7 +10,8 @@ public static class EdmModelBuilder
     public static IEdmModel GetEdmModel()
     {
         var builder = new ODataConventionModelBuilder();
-        builder.EntitySet<Book>("Books").EntityType.HasKey(b => b.Id);
+        builder.EntitySet<Book>("Books");
+        // .EntityType.HasKey(b => b.Id);
         builder.EntitySet<Press>("Presses");
         return builder.GetEdmModel();
     }

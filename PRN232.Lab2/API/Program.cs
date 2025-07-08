@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using API.DAL;
 using API.Models;
 using Microsoft.AspNetCore.OData;
@@ -9,7 +10,12 @@ using Microsoft.OData.ModelBuilder;
 using ODataBookStore.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-var edmModel = EdmModelBuilder.GetEdmModel();
+var odataBuilder = new ODataConventionModelBuilder();
+odataBuilder.EntitySet<Book>("Books");
+odataBuilder.EntitySet<Press>("Presses");
+
+// var edmModel = EdmModelBuilder.GetEdmModel();
+var edmModel = odataBuilder.GetEdmModel();
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 builder.Services.AddDbContext<BookStoreContext>(
@@ -18,9 +24,18 @@ builder.Services.AddDbContext<BookStoreContext>(
 
 // builder.Services.AddControllers();
 
-builder.Services.AddControllers().AddOData(option =>
-    option.Select().Filter().Count().OrderBy().Expand().SetMaxTop(100).Count()
-    .AddRouteComponents("odata", edmModel)
+builder.Services.AddControllers()
+.AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
+    })
+.AddOData(option =>
+    option.Select().Filter().Count().OrderBy().Expand().Count().SetMaxTop(100)
+    .AddRouteComponents(
+        "odata",
+        edmModel
+        )
     );
 
 

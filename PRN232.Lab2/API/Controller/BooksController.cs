@@ -1,5 +1,6 @@
 using API.DAL;
 using API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
@@ -7,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Namespace;
 
-// [Route("api/[controller]")]
-// [ApiController]
+[Route("api/books")]
+[ApiController]
 public class BooksController : ODataController
 {
     private readonly BookStoreContext db;
@@ -27,16 +28,16 @@ public class BooksController : ODataController
         }
     }
 
-    // [HttpGet]
     [EnableQuery(PageSize = 4)]
-    public IActionResult Get()
+    [HttpGet]
+    public IActionResult GetAllBooks()
     {
         return Ok(db.Books);
     }
 
-    [HttpPost("api/Books")]
+    [HttpPost]
     // [EnableQuery]
-    public IActionResult Post([FromBody] Book book)
+    public IActionResult CreateBook([FromBody] Book book)
     {
         if (!ModelState.IsValid)
         {
@@ -69,7 +70,7 @@ public class BooksController : ODataController
     }
 
     [HttpPut]
-    public IActionResult Update([FromBody] Book book)
+    public IActionResult UpdateBook([FromBody] Book book)
     {
         Book? b = db.Books.FirstOrDefault(c => c.Id == book.Id);
         if (b == null)
@@ -92,8 +93,8 @@ public class BooksController : ODataController
     }
 
 
-    [HttpDelete]
-    public IActionResult Delete([FromBody] int key)
+    [HttpDelete("{key}")]
+    public IActionResult RemoveBook(int key)
     {
         Book? b = db.Books.FirstOrDefault(c => c.Id == key);
         if (b == null)
