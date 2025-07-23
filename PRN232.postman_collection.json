@@ -1,0 +1,816 @@
+{
+	"info": {
+		"_postman_id": "d68c266d-abca-48ed-b4e4-c998745084a9",
+		"name": "PRN232",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "35575897"
+	},
+	"item": [
+		{
+			"name": "Lab2",
+			"item": [
+				{
+					"name": "TC1_GetBooks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status should be 200\", function(){\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"let jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Returns an array\", function () {\r",
+									"    pm.expect(Array.isArray(jsonData)).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response is an array with exactly 4 items\", function () {\r",
+									"    pm.expect(jsonData.length).to.eql(4);          \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Forth element exactly matches expected object\", function () {\r",
+									"    pm.expect(jsonData[3]).to.eql(JSON.parse(pm.environment.get('get_book_request')));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{lab2_base_url}}/api/books",
+							"host": [
+								"{{lab2_base_url}}"
+							],
+							"path": [
+								"api",
+								"books"
+							],
+							"query": [
+								{
+									"key": "$select",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC2_UpdateBook",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status should be 200\", function(){\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"let jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Returns an object\", function () {\r",
+									"    pm.expect(jsonData).to.be.an(\"object\");\r",
+									"    pm.expect(jsonData).to.not.be.null;\r",
+									"    pm.expect(Array.isArray(jsonData)).to.be.false;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Return the updated object\", function () {\r",
+									"    pm.expect(jsonData).to.eql(JSON.parse(pm.environment.get('update_book_request')));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 4,\r\n    \"isbn\": \"978-1-491-95603-8\",\r\n    \"title\": \"Learning MSSQL\",\r\n    \"author\": \"Salahaldin Juba\",\r\n    \"price\": 20.00,\r\n    \"location\": {\r\n        \"city\": \"London\",\r\n        \"street\": \"12 King's Road\"\r\n    },\r\n    \"press\": {\r\n        \"id\": 4,\r\n        \"name\": \"O'Reilly Media\",\r\n        \"category\": 0\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{lab2_base_url}}/api/books",
+							"host": [
+								"{{lab2_base_url}}"
+							],
+							"path": [
+								"api",
+								"books"
+							],
+							"query": [
+								{
+									"key": "$orderby",
+									"value": "Name desc",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC3_GetPresses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status should be 200\", function(){\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"let jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Returns an array\", function () {\r",
+									"    pm.expect(Array.isArray(jsonData)).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response is an array with at most 2 items\", function () {\r",
+									"    pm.expect(jsonData.length).to.be.at.most(2);          \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Second element exactly matches expected object\", function () {\r",
+									"    pm.expect(jsonData[1]).to.eql(JSON.parse(pm.environment.get('get_press_request')));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{lab2_base_url}}/api/presses?$top=2&$skip=1",
+							"host": [
+								"{{lab2_base_url}}"
+							],
+							"path": [
+								"api",
+								"presses"
+							],
+							"query": [
+								{
+									"key": "$top",
+									"value": "2"
+								},
+								{
+									"key": "$skip",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TC4_Delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status should be 200\", function(){\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{lab2_base_url}}/api/books/4"
+					},
+					"response": []
+				},
+				{
+					"name": "TC5_CreateBook",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status should be 200\", function(){\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"let jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Returns an object\", function () {\r",
+									"    pm.expect(jsonData).to.be.an(\"object\");\r",
+									"    pm.expect(jsonData).to.not.be.null;\r",
+									"    pm.expect(Array.isArray(jsonData)).to.be.false;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Return the updated object\", function () {\r",
+									"    pm.expect(jsonData).to.eql(JSON.parse(pm.environment.get('create_book_request')));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 21,\r\n    \"isbn\": \"978-1-491-95603-8\",\r\n    \"title\": \"Learning Scalla\",\r\n    \"author\": \"Salahaldin Juba\",\r\n    \"price\": 39.99,\r\n    \"location\": {\r\n        \"city\": \"London\",\r\n        \"street\": \"12 King's Road\"\r\n    },\r\n    \"press\": {\r\n        \"id\": 4,\r\n        \"name\": \"O'Reilly Media\",\r\n        \"category\": 0\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{lab2_base_url}}/api/books"
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"    pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Content-Type is JSON\", function () {\r",
+							"    pm.response.to.be.json;\r",
+							"})"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Lab3",
+			"item": [
+				{
+					"name": "Success",
+					"item": [
+						{
+							"name": "TC2_Login_Pass",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"\r",
+											"pm.test(\"Login_Pass 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"if (pm.response.to.have.status(200)) {\r",
+											"    let jsonResponse = pm.response.json();\r",
+											"\r",
+											"    pm.environment.set(\"bearer_token\", jsonResponse.token);\r",
+											"}\r",
+											"\r",
+											"const schema = {\r",
+											"    \"type\": \"object\",\r",
+											"    \"properties\": {\r",
+											"  \"items\": {\r",
+											"        // \"Token\": { type: \"string\" },\r",
+											"        \"a\": { type: \"string\" }\r",
+											"    }\r",
+											"  }\r",
+											"};\r",
+											"\r",
+											"// const Ajv = require(\"ajv\"),\r",
+											"//       ajv = new Ajv({ allErrors: true });\r",
+											"\r",
+											"// const validate = ajv.compile(schema);\r",
+											"// const valid = validate(pm.response);\r",
+											"\r",
+											"pm.test(\"Login schema is valid (Ajv)\", function () {\r",
+											"    pm.response.to.have.jsonSchema(schema);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"email\": \"admin@handbagasian.org\",\r\n  \"password\": \"@1\"\r\n}\r\n\r\n// admin@handbagasian.org\r\n// jose@handbagasian.org\r\n// machael@handbagasian.org\r\n// steve@handbagasian.org\r\n// dev@globalflower.com",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{lab3_base_url}}/api/auth"
+							},
+							"response": []
+						},
+						{
+							"name": "TC7_Create_Success",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Create_Success 201\", function(){\r",
+											"    pm.response.to.have.status(201);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"modelName\": \"Luious Viton\",\r\n  \"material\": \"Harden Leather\",\r\n  \"price\": 99.99,\r\n  \"stock\": 12,\r\n  \"brandId\": 1\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{lab3_base_url}}/api/handbags"
+							},
+							"response": []
+						},
+						{
+							"name": "TC8_Update_Success",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Update_Success 200\", function(){\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"modelName\": \"Baguette Bag\",\r\n  \"material\": \"Harden Leather\",\r\n  \"price\": 999.99,\r\n  \"stock\": 120,\r\n  \"brandId\": 10\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{lab3_base_url}}/api/handbags/10"
+							},
+							"response": []
+						},
+						{
+							"name": "TC9_GetById_Success",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GetById_Success 200\", function(){\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{lab3_base_url}}/api/handbags/9"
+							},
+							"response": []
+						},
+						{
+							"name": "TC10_GetListOData_Success",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GetListOData_Success 200\", function(){\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{lab3_base_url}}/api/handbags/search?modelName=Bag&material=Leather&$filter=Price gt 3000",
+									"host": [
+										"{{lab3_base_url}}"
+									],
+									"path": [
+										"api",
+										"handbags",
+										"search"
+									],
+									"query": [
+										{
+											"key": "modelName",
+											"value": "Bag"
+										},
+										{
+											"key": "material",
+											"value": "Leather"
+										},
+										{
+											"key": "$filter",
+											"value": "Price gt 3000"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Fail",
+					"item": [
+						{
+							"name": "TC1_Login_Fail",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Login_Fail 404\", function(){\r",
+											"    pm.response.to.have.status(404);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"email\": \"admin@handbagasian.org\",\r\n  \"password\": \"@2\"\r\n}\r\n\r\n// admin@handbagasian.org\r\n// jose@handbagasian.org\r\n// machael@handbagasian.org\r\n// steve@handbagasian.org\r\n// dev@globalflower.com",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{lab3_base_url}}/api/auth"
+							},
+							"response": []
+						},
+						{
+							"name": "TC3_UnAuthorized_Read",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"UnAuthorized_Read 401\", function(){\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": "{{lab3_base_url}}/api/handbags"
+							},
+							"response": []
+						},
+						{
+							"name": "TC4_UnAuthorized_Create",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"UnAuthorized_Create 401\", function(){\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"modelName\": \"Luous Viton\",\r\n  \"material\": \"Not Leather\",\r\n  \"price\": 99.99,\r\n  \"stock\": 12\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{lab3_base_url}}/api/handbags"
+							},
+							"response": []
+						},
+						{
+							"name": "TC_5_UnAuthorized_Update",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"UnAuthorized_Update 401\", function(){\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"modelName\": \"Luous Viton\",\r\n  \"material\": \"Not Leather\",\r\n  \"price\": 99.99,\r\n  \"stock\": 12\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{lab3_base_url}}/api/handbags/1"
+							},
+							"response": []
+						},
+						{
+							"name": "TC6_UnAuthorized_Delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"UnAuthorized_Delete 401\", function(){\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": "{{lab3_base_url}}/api/handbags/1"
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"// const schema = {\r",
+									"//   type: \"object\",\r",
+									"//   properties: {\r",
+									"//     ErrorCode: { type: \"string\" },\r",
+									"//     NotMessage: { type: \"string\" }\r",
+									"//   }\r",
+									"// };\r",
+									"var schema = {\r",
+									"  \"items\": {\r",
+									"    \"type\": \"boolean\"\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"const Ajv = require(\"ajv\"),\r",
+									"      ajv = new Ajv({ allErrors: true });\r",
+									"\r",
+									"const validate = ajv.compile(schema);\r",
+									"const valid = validate(pm.response);\r",
+									"\r",
+									"pm.test(\"Error schema is valid (Ajv)\", function () {\r",
+									"    pm.expect(valid, JSON.stringify(validate.errors)).to.be.true;\r",
+									"});\r",
+									"\r",
+									"\r",
+									"var data1 = [true, false];\r",
+									"var data2 = [true, 123];\r",
+									"\r",
+									"pm.test('Schema is valid', function() {\r",
+									"  pm.expect(tv4.validate(data1, schema)).to.be.true;\r",
+									"//   pm.expect(tv4.validate(data2, schema)).to.be.true; // this statement would not be true\r",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": {
+					"token": "{{bearer_token}}"
+				}
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"pm.test(\"Content-Type is present\", function () {\r",
+							"    pm.response.to.have.header(\"Content-Type\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Content-Type is JSON\", function () {\r",
+							"    pm.response.to.be.json;\r",
+							"})"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Lab2_GetMockData",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"if (Array.isArray(jsonData) && jsonData.length > 0) {\r",
+							"    pm.environment.set('cur_request', JSON.stringify(jsonData[0]));\r",
+							"} else {\r",
+							"    console.warn(\"Response is not an array or is empty\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/Books?$filter=Id eq 4",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"Books"
+					],
+					"query": [
+						{
+							"key": "$filter",
+							"value": "Title eq 'Learning PostgreSQL'",
+							"disabled": true
+						},
+						{
+							"key": "$filter",
+							"value": "Id eq 4"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": {
+			"token": "{{bearer_token}}"
+		}
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "lab2_base_url",
+			"value": "https://localhost:7020",
+			"type": "string"
+		},
+		{
+			"key": "lab3_base_url",
+			"value": "https://localhost:7237",
+			"type": "string"
+		}
+	]
+}
