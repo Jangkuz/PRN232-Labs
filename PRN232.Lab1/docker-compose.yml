@@ -1,0 +1,6 @@
+services:
+  api:
+    image: ${DOCKER_REGISTRY-}prn232lab1api
+    build:
+      context: .
+      dockerfile: PRN232.Lab1.Api/Dockerfile

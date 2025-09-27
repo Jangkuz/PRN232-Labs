@@ -36,32 +36,32 @@ public class BooksController : ODataController
     }
 
     [HttpPost]
-    // [EnableQuery]
-    public IActionResult CreateBook([FromBody] Book book)
+    //[EnableQuery]
+    public IActionResult Post([FromBody] Book notBook)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-        if (book == null)
+        if (notBook == null)
         {
             return BadRequest("Book cannot be null");
         }
 
-        Book? b = db.Books.FirstOrDefault(b => b.Id == book.Id);
+        Book? b = db.Books.FirstOrDefault(b => b.Id == notBook.Id);
         if (b != null)
         {
             return BadRequest("Book with the same ID already exists");
         }
 
         //Press? p = db.Presses.Find(book.Press.Id);
-        Press? p = db.Presses.AsTracking().FirstOrDefault(p => p.Id == book.Press.Id);
+        Press? p = db.Presses.AsTracking().FirstOrDefault(p => p.Id == notBook.Press.Id);
         if (p == null)
         {
             return NotFound("Press not found");
         }
 
-        b = book;
+        b = notBook;
         b.Press = p;
 
         db.Books.Add(b);
